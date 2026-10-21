@@ -42,7 +42,10 @@ LOCAL_STATE = os.path.expanduser("~/Library/Application Support/Google/Chrome/Lo
 def guardar_sesion(d):
     hexa = json.dumps(d).encode().hex()  # por stdin y en hex: no pasa por la línea de comandos
     cmd = f'add-generic-password -U -a "{os.environ.get("USER", "")}" -s "{LLAVERO}" -X {hexa}\n'
-    subprocess.run(["security", "-i"], input=cmd, text=True, capture_output=True, check=True)
+    r = subprocess.run(["security", "-i"], input=cmd, text=True, capture_output=True)
+    if r.returncode != 0:  # 36 = Llavero bloqueado (pasa al entrar por SSH, no frente a la Mac)
+        sys.exit(f"NO: no pude guardar en el Llavero (código {r.returncode}"
+                 + ("; está bloqueado: corre esto desde la Mac, no por SSH" if r.returncode == 36 else "") + ").")
 
 
 def leer_sesion():
